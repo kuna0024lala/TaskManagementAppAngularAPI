@@ -53,17 +53,14 @@ namespace TaskManagementAppAngular.Controllers
            int pagesize = 3,
            int pageNumber = 1)
         {
-            var totalRecords = await taskRepository.CountAsync();
-            var totalPages = Math.Ceiling((decimal)totalRecords / pagesize);
+            pagesize = Math.Max(pagesize, 1);
 
-            if (pageNumber > totalPages)
-            {
-                pageNumber = (int)totalPages;
-            }
-            if (pageNumber < 1)
-            {
-                pageNumber = 1;
-            }
+            
+            var totalRecords = await taskRepository.CountAsync();
+            var totalPages = Convert.ToInt32(Math.Ceiling((decimal)totalRecords / pagesize));
+
+            pageNumber = Math.Max(pageNumber, 1);
+            pageNumber = Math.Min(pageNumber, totalPages);
 
             var taskitems = await taskRepository.GetAllAsync(searchQuery, sortBy, sortDirection, pageNumber, pagesize);
 
@@ -143,7 +140,7 @@ namespace TaskManagementAppAngular.Controllers
         }
 
 
-        [HttpGet("exportToExcel")]
+        [HttpPost("export")]
         public async Task<IActionResult> ExportToExcel([FromBody] ExportRequest exportRequest)
         {
             if (exportRequest == null || exportRequest.SelectedIds == null || !exportRequest.SelectedIds.Any())
